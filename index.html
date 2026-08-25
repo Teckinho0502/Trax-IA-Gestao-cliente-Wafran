@@ -443,6 +443,11 @@ table.data tr:hover td{background:rgba(255,255,255,.02)}
       <div>Endpoint não configurado. Defina <code>API_URL</code> no topo do arquivo para conectar aos dados reais.</div>
     </div>
 
+    <div id="apiBanner" class="cfg-banner hidden">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/></svg>
+      <div id="apiBannerTxt"></div>
+    </div>
+
     <!-- ===== DASHBOARD ===== -->
     <section class="view active" id="view-dashboard">
       <div class="topbar">
@@ -1115,7 +1120,9 @@ async function loadDashboard(){
   renderTanksLoading();
   try{
     const tq = await API.get("tanques_status");
-    let tanks = (tq.ok && tq.data) ? tq.data.map(normalizaTanque) : [];
+    const bruto = (tq.ok && tq.data) ? tq.data : [];
+    diagnosticarAPI(bruto);
+    let tanks = bruto.map(normalizaTanque);
     if(filial) tanks = tanks.filter(t=>t.filial===filial);
     STATE.tanques = tanks;
     STATE.fixos  = tanks.filter(t=>t.tipo==="FIXO");
@@ -1146,6 +1153,24 @@ async function loadDashboard(){
   $("#dashSub").textContent = filial
     ? `Filial ${filial} · volumetria e consumo · ${rp}`
     : `Consolidado de todas as filiais · ${rp}`;
+}
+
+/* Avisa na tela quando o Apps Script ainda não devolve tipo/compartimentos.
+   Sem isso o painel trata todo tanque como FIXO e o saldo dos móveis fica em 0. */
+function diagnosticarAPI(bruto){
+  const banner = $("#apiBanner"), txt = $("#apiBannerTxt");
+  if(!banner) return;
+  if(!bruto || !bruto.length){ banner.classList.add("hidden"); return; }
+  const temTipo  = bruto.some(t=>t.tipo !== undefined && t.tipo !== null && t.tipo !== "");
+  const temComps = bruto.some(t=>t.compartimentos || t.comps);
+  if(temTipo && temComps){ banner.classList.add("hidden"); return; }
+  const faltas = [];
+  if(!temTipo)  faltas.push("<code>tipo</code> (coluna G da aba TANQUES)");
+  if(!temComps) faltas.push("<code>compartimentos</code> (coluna H + aba COMPARTIMENTOS)");
+  txt.innerHTML = "A API está respondendo, mas a ação <code>tanques_status</code> não devolve " +
+    faltas.join(" nem ") + ". Enquanto isso, os tanques móveis aparecem como fixos e com saldo zerado. " +
+    "Atualize o <code>Servidor_API.gs</code> para ler as colunas novas.";
+  banner.classList.remove("hidden");
 }
 
 function renderTanksLoading(){
