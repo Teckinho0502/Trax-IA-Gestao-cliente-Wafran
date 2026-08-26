@@ -253,6 +253,99 @@ a{color:inherit}
 .mnote{margin-top:14px;font-size:12px;color:var(--txt-faint);line-height:1.6}
 .mnote b{color:var(--txt-dim)}
 
+/* ---------- leque do bloco "Estoque sobre rodas" ---------- */
+.leque-head{
+  width:100%;background:none;border:0;color:inherit;font:inherit;text-align:left;
+  display:flex;align-items:center;gap:12px;margin:26px 0 0;padding:12px 14px;
+  border:1px solid var(--line);border-radius:12px;background:var(--panel);
+  transition:border-color .15s,background .15s;cursor:pointer;
+}
+.leque-head:hover{border-color:var(--orange);background:var(--panel-2)}
+.leque-head:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+.leque-chev{
+  width:24px;height:24px;border-radius:50%;background:var(--panel-2);
+  display:grid;place-items:center;transition:transform .3s ease;flex-shrink:0;
+}
+.leque-head.open .leque-chev{transform:rotate(180deg)}
+.leque-chev svg{width:12px;height:12px;stroke:var(--orange-soft);fill:none;stroke-width:2.4}
+.leque-resumo{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.leque-pill{
+  font-size:11px;font-weight:600;letter-spacing:.4px;padding:4px 11px;border-radius:20px;
+  background:var(--panel-2);color:var(--txt-dim);white-space:nowrap;
+}
+.leque-pill.alerta{background:rgba(255,84,104,.16);color:var(--red)}
+.leque-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .36s ease}
+.leque-body.open{grid-template-rows:1fr}
+.leque-body>div{overflow:hidden}
+.leque-in{padding-top:14px}
+.leque-acoes{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.mini-btn{
+  background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  padding:6px 12px;color:var(--txt-dim);font-size:12px;transition:.15s;
+}
+.mini-btn:hover{border-color:var(--orange);color:var(--txt)}
+
+/* ---------- dossiê do usuário ---------- */
+.dossie{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:6px}
+.dossie div{background:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.dossie label{display:block;font-size:10px;letter-spacing:1.2px;color:var(--txt-faint);text-transform:uppercase;margin-bottom:5px}
+.dossie b{font-size:15px;font-weight:600;color:var(--txt)}
+.aviso-dup{
+  background:rgba(255,178,62,.1);border:1px solid rgba(255,178,62,.35);border-radius:12px;
+  padding:13px 16px;margin-bottom:18px;font-size:13px;color:var(--amber);line-height:1.55;
+}
+.aviso-dup b{color:#ffd08a}
+.linha-clicavel{cursor:pointer}
+
+/* ---------- pendências de descarga ---------- */
+.nav-badge{
+  margin-left:auto;background:var(--orange);color:#0e0f12;font-size:10px;font-weight:800;
+  min-width:19px;height:19px;border-radius:10px;display:grid;place-items:center;padding:0 6px;
+  animation:pulse 1.8s ease infinite;
+}
+.pend{
+  background:var(--panel);border:1px solid rgba(255,178,62,.4);border-radius:var(--radius);
+  padding:20px;margin-bottom:16px;
+}
+.pend-top{display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.pend-placa{font-family:var(--font-display);font-weight:800;font-size:19px;letter-spacing:.3px}
+.pend-sub{font-size:11.5px;color:var(--txt-faint);margin-top:3px}
+.pend-vol{margin-left:auto;text-align:right}
+.pend-vol b{font-family:var(--font-mono);font-size:26px;font-weight:700;color:var(--amber);display:block;line-height:1}
+.pend-vol span{font-size:11px;color:var(--txt-faint);letter-spacing:.8px}
+.rateio{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.rat{background:var(--ink);border:1px solid var(--line);border-radius:11px;padding:13px 14px;transition:border-color .15s}
+.rat.usado{border-color:var(--orange)}
+.rat.vazio{opacity:.5}
+.rat-cab{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.rat-cab b{font-size:14px;font-weight:700}
+.rat-saldo{font-size:11.5px;color:var(--txt-dim);font-family:var(--font-mono);margin-bottom:9px}
+.rat input{
+  width:100%;background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  padding:9px 11px;color:var(--txt);font-size:14px;font-family:var(--font-mono);
+}
+.rat input:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px var(--orange-glow)}
+.rat button{
+  margin-top:7px;width:100%;font-size:11px;color:var(--txt-faint);border:1px solid var(--line);
+  border-radius:7px;padding:5px;transition:.15s;
+}
+.rat button:hover{border-color:var(--orange);color:var(--orange-soft)}
+.pend-foot{
+  display:flex;align-items:center;gap:14px;margin-top:18px;padding-top:16px;
+  border-top:1px solid var(--line);flex-wrap:wrap;
+}
+.pend-saldo{font-size:13px;color:var(--txt-dim)}
+.pend-saldo b{font-family:var(--font-mono);font-size:16px;color:var(--txt)}
+.pend-saldo.ok b{color:var(--green)}
+.pend-saldo.dif b{color:var(--amber)}
+.pend-acoes{margin-left:auto;display:flex;gap:9px}
+.btn-sm{padding:10px 18px;border-radius:10px;font-size:13.5px;font-weight:600;transition:.15s}
+.btn-sm.ok{background:linear-gradient(135deg,var(--orange),#e0530f);color:#fff;box-shadow:0 8px 20px -9px var(--orange)}
+.btn-sm.ok:hover{transform:translateY(-1px)}
+.btn-sm.ok:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-sm.gh{background:var(--panel-2);border:1px solid var(--line);color:var(--txt-dim)}
+.btn-sm.gh:hover{border-color:var(--red);color:var(--red)}
+
 /* ---------- KPI strip ---------- */
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:22px}
 .kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;position:relative;overflow:hidden}
@@ -425,6 +518,11 @@ table.data tr:hover td{background:rgba(255,255,255,.02)}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM3 21v-2a6 6 0 016-6h6a6 6 0 016 6v2"/></svg>
       <span class="lbl">Credenciais</span>
     </button>
+    <button class="nav-item" data-view="pendencias" id="navPendencias">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L14.7 3.9a2 2 0 00-3.4 0z"/></svg>
+      <span class="lbl">Descargas</span>
+      <span class="nav-badge hidden" id="pendBadge">0</span>
+    </button>
     <button class="nav-item hidden" data-view="sessoes" id="navSessoes">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/></svg>
       <span class="lbl">Acessos</span>
@@ -480,13 +578,25 @@ table.data tr:hover td{background:rgba(255,255,255,.02)}
       </div>
       <div class="tanks-row" id="tanksRow"></div>
 
-      <!-- tanques móveis -->
+      <!-- tanques móveis (leque) -->
       <div id="mtanksBlock" class="hidden">
-        <div class="section-head">
-          <div class="card-title">Estoque sobre rodas</div>
-          <div class="card-tag" id="mtanksTag">toque no card para abrir os compartimentos</div>
+        <button class="leque-head" id="lequeHead" aria-expanded="false" onclick="toggleLeque()">
+          <span class="leque-chev"><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></span>
+          <span>
+            <span class="card-title">Estoque sobre rodas</span>
+            <span class="card-tag" style="display:block;margin-top:2px" id="mtanksTag"></span>
+          </span>
+          <span class="leque-resumo" id="lequeResumo"></span>
+        </button>
+        <div class="leque-body" id="lequeBody">
+          <div><div class="leque-in">
+            <div class="leque-acoes">
+              <button class="mini-btn" onclick="abrirTodosMTanks(true)">Abrir todos os compartimentos</button>
+              <button class="mini-btn" onclick="abrirTodosMTanks(false)">Recolher todos</button>
+            </div>
+            <div id="mtanksRow"></div>
+          </div></div>
         </div>
-        <div id="mtanksRow"></div>
       </div>
 
       <div class="kpis" id="kpiRow"></div>
@@ -802,12 +912,35 @@ table.data tr:hover td{background:rgba(255,255,255,.02)}
       <div class="table-wrap" id="credTableWrap"></div>
     </section>
 
+    <!-- ===== PENDÊNCIAS DE DESCARGA ===== -->
+    <section class="view" id="view-pendencias">
+      <div class="topbar">
+        <div>
+          <div class="page-title">Descargas a ratear</div>
+          <div class="page-sub">Entradas lançadas com placa de caminhão-tanque — informe de quais compartimentos saiu o produto</div>
+        </div>
+        <div class="controls">
+          <select class="filial-select" id="pendStatus">
+            <option value="PENDENTE">Pendentes</option>
+            <option value="RESOLVIDA">Resolvidas</option>
+            <option value="IGNORADA">Ignoradas</option>
+            <option value="TODAS">Todas</option>
+          </select>
+          <button class="btn-ghost" id="btnPendRefresh">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.5 9a9 9 0 0114.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0020.5 15"/></svg>
+            Verificar agora
+          </button>
+        </div>
+      </div>
+      <div id="pendLista"></div>
+    </section>
+
     <!-- ===== SESSÕES / ACESSOS (somente PROPRIETARIO) ===== -->
     <section class="view" id="view-sessoes">
       <div class="topbar">
         <div>
           <div class="page-title">Acessos</div>
-          <div class="page-sub">Quem está conectado agora e quando cada usuário entrou pela última vez</div>
+          <div class="page-sub">Presença, último acesso e histórico de logins — clique na linha para o dossiê completo</div>
         </div>
         <div class="controls">
           <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--txt-dim);cursor:pointer">
@@ -819,6 +952,7 @@ table.data tr:hover td{background:rgba(255,255,255,.02)}
           </button>
         </div>
       </div>
+      <div class="aviso-dup hidden" id="sesAviso"></div>
       <div class="kpis" id="sesKpis"></div>
       <div class="table-wrap" id="sesTableWrap"></div>
     </section>
@@ -916,6 +1050,9 @@ window.mascaraTelefone = mascaraTelefone;
 
 let STATE = { user:null, filiais:[], tanques:[], fixos:[], moveis:[] };
 let _hbTimer = null, _sesTimer = null;
+let _lequeAberto = false;   // estado do bloco "Estoque sobre rodas"
+let _sesCache = [];
+let _pendTimer = null, _pendCache = [];
 
 function toast(msg, type="ok"){
   const t=$("#toast");
@@ -966,12 +1103,14 @@ function enterApp(){
   $("#uRole").textContent = (STATE.user.nivel||"—") + (STATE.user.unidade? " · "+STATE.user.unidade : "");
   $("#navSessoes").classList.toggle("hidden", !ehProprietario());
   iniciarHeartbeat();
+  iniciarVigiaPendencias();
   loadFiliais().then(loadDashboard);
 }
 
 $("#btnLogout").addEventListener("click", async ()=>{
   try{ await API.post("logout",{login:(STATE.user&&STATE.user.login)||""}); }catch(e){}
   pararHeartbeat();
+  if(_pendTimer){ clearInterval(_pendTimer); _pendTimer=null; }
   if(_sesTimer){ clearInterval(_sesTimer); _sesTimer=null; }
   STATE.user=null;
   $("#app").classList.add("hidden");
@@ -1011,6 +1150,7 @@ $$(".nav-item").forEach(btn=>{
     if(v==="frota") loadFrota();
     if(v==="credenciais") loadCredenciais();
     if(v==="sessoes") loadSessoes(true);
+    if(v==="pendencias") loadPendencias();
   });
 });
 
@@ -1338,10 +1478,50 @@ function renderMobileTanks(moveis){
 
   const negativos = moveis.filter(t=>t.saldo<0 || (t.compartimentos||[]).some(c=>c.saldo<0)).length;
   const sobreRodas = moveis.reduce((a,t)=>a+t.saldo,0);
-  $("#mtanksTag").innerHTML = negativos
-    ? `<span style="color:var(--red)">${negativos} tanque(s) com saldo negativo</span>`
-    : `${fmt(sobreRodas)} L em trânsito`;
+  const carregados = moveis.filter(t=>t.saldo>0).length;
+
+  $("#mtanksTag").textContent = _lequeAberto
+    ? "clique em um caminhão para ver os compartimentos"
+    : "clique para abrir";
+
+  const pills = [
+    `<span class="leque-pill">${moveis.length} caminhã${moveis.length>1?"o(s)":"o"}</span>`,
+    `<span class="leque-pill">${fmt(sobreRodas)} L em trânsito</span>`
+  ];
+  if(carregados) pills.push(`<span class="leque-pill">${carregados} carregado(s)</span>`);
+  if(negativos)  pills.push(`<span class="leque-pill alerta">${negativos} com saldo negativo</span>`);
+  $("#lequeResumo").innerHTML = pills.join("");
+
+  aplicarLeque();
 }
+
+/* ---------- leque: abre/fecha o bloco inteiro ---------- */
+function aplicarLeque(){
+  const head = $("#lequeHead"), body = $("#lequeBody");
+  if(!head || !body) return;
+  head.classList.toggle("open", _lequeAberto);
+  body.classList.toggle("open", _lequeAberto);
+  head.setAttribute("aria-expanded", _lequeAberto ? "true" : "false");
+  const tag = $("#mtanksTag");
+  if(tag) tag.textContent = _lequeAberto
+    ? "clique em um caminhão para ver os compartimentos"
+    : "clique para abrir";
+  if(_lequeAberto){
+    // as barras só animam depois que o bloco tem altura
+    setTimeout(()=>$$("#mtanksRow .gauge-fill").forEach(el=>{ el.style.height=(el.dataset.h||0)+"%"; }),80);
+  }
+}
+function toggleLeque(){ _lequeAberto = !_lequeAberto; aplicarLeque(); }
+function abrirTodosMTanks(abrir){
+  $$("#mtanksRow .mtank").forEach(c=>{
+    c.classList.toggle("open", !!abrir);
+    const b = c.querySelector(".mtank-head");
+    if(b) b.setAttribute("aria-expanded", abrir?"true":"false");
+    if(abrir) setTimeout(()=>c.querySelectorAll(".comp-fill").forEach(el=>{ el.style.height=(el.dataset.h||0)+"%"; }),40);
+  });
+}
+window.toggleLeque = toggleLeque;
+window.abrirTodosMTanks = abrirTodosMTanks;
 function toggleMTank(id, btn){
   const c = document.getElementById(id);
   const open = c.classList.toggle("open");
@@ -1999,6 +2179,218 @@ async function delCred(linha, login){
 }
 
 /* =================================================================
+   PENDÊNCIAS DE DESCARGA
+   -----------------------------------------------------------------
+   Quando o app lança uma ENTRADA com a placa de um caminhão-tanque que
+   tem saldo, o sistema não sabe de qual compartimento saiu o produto.
+   Aqui o usuário faz o rateio e os saldos são debitados.
+   ================================================================= */
+function iniciarVigiaPendencias(){
+  if(_pendTimer) clearInterval(_pendTimer);
+  const checar = async ()=>{
+    if(!STATE.user) return;
+    try{
+      const r = await API.get("pendencias_contar");
+      const n = (r.ok && r.data) ? Number(r.data.pendentes||0) : 0;
+      const b = $("#pendBadge");
+      b.textContent = n;
+      b.classList.toggle("hidden", n<=0);
+    }catch(e){}
+  };
+  checar();
+  _pendTimer = setInterval(checar, 120000);   // a cada 2 min
+}
+
+async function loadPendencias(){
+  const wrap = $("#pendLista");
+  wrap.innerHTML = '<div class="state"><span class="spin"></span></div>';
+  const status = $("#pendStatus").value;
+  try{
+    const res = await API.get("pendencias_listar",{status});
+    const rows = (res.ok && res.data) ? res.data : [];
+    _pendCache = rows;
+
+    const b = $("#pendBadge");
+    if(status==="PENDENTE"){
+      b.textContent = rows.length;
+      b.classList.toggle("hidden", rows.length<=0);
+    }
+
+    if(!rows.length){
+      wrap.innerHTML = `<div class="state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 6L9 17l-5-5"/></svg>
+        <h4>Nada a ratear</h4>
+        <p>${status==="PENDENTE"
+          ? "Toda descarga lançada pelo app já teve os compartimentos informados."
+          : "Nenhuma pendência com esse status."}</p></div>`;
+      return;
+    }
+
+    wrap.innerHTML = rows.map((p,i)=>{
+      const d = p.data ? new Date(p.data) : null;
+      const quando = d && !isNaN(d) ? d.toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"}) : "—";
+      const resolvida = p.status !== "PENDENTE";
+
+      if(resolvida){
+        return `<div class="pend" style="border-color:var(--line)">
+          <div class="pend-top">
+            <div>
+              <div class="pend-placa">${esc(p.placa)}</div>
+              <div class="pend-sub">${quando} · ${esc(p.produto)} · linha ${p.linhaDBApp} da DB App</div>
+            </div>
+            <div class="pend-vol">
+              <b style="color:${p.status==="RESOLVIDA"?"var(--green)":"var(--txt-faint)"}">${fmt(p.litros)}</b>
+              <span>LITROS</span>
+            </div>
+          </div>
+          <div style="font-size:13px;color:var(--txt-dim)">
+            <span class="pill ${p.status==="RESOLVIDA"?"on":"lvl"}">${esc(p.status)}</span>
+            ${p.detalhe?`<span style="margin-left:10px">${esc(p.detalhe)}</span>`:""}
+          </div>
+        </div>`;
+      }
+
+      const comps = p.compartimentos||[];
+      const campos = comps.map(c=>{
+        const vazio = c.saldo<=0;
+        return `<div class="rat ${vazio?'vazio':''}" id="rat-${i}-${esc(c.nome)}">
+          <div class="rat-cab">
+            <span class="dot" style="width:10px;height:10px;border-radius:3px;background:${vazio?'var(--line)':corProduto(c.produto)}"></span>
+            <b>${esc(c.nome)}</b>
+          </div>
+          <div class="rat-saldo">${vazio?"vazio":`${fmt(c.saldo)} L de ${esc(String(c.produto||"").toLowerCase())}`} · cap. ${fmt(c.capacidade)}</div>
+          <input type="text" inputmode="decimal" placeholder="0"
+                 data-pend="${i}" data-comp="${esc(c.nome)}" data-saldo="${c.saldo}"
+                 oninput="recalcRateio(${i})">
+          ${vazio?"":`<button type="button" onclick="usarTudo(${i},'${esc(c.nome)}',${c.saldo})">usar os ${fmt(c.saldo)} L</button>`}
+        </div>`;
+      }).join("");
+
+      return `<div class="pend fade-in" id="pend-${i}">
+        <div class="pend-top">
+          <div>
+            <div class="pend-placa">${esc(p.placa)}</div>
+            <div class="pend-sub">${quando} · ${esc(p.produto)} · linha ${p.linhaDBApp} da DB App${p.responsavel?" · "+esc(p.responsavel):""}</div>
+          </div>
+          <div class="pend-vol"><b>${fmt(p.litros)}</b><span>LITROS DESCARREGADOS</span></div>
+        </div>
+        <div class="rateio">${campos||'<div style="color:var(--txt-faint);font-size:13px">Este caminhão não tem compartimentos cadastrados.</div>'}</div>
+        <div class="pend-foot">
+          <div class="pend-saldo" id="saldo-${i}">Falta ratear <b>${fmt(p.litros)}</b> L</div>
+          <div class="pend-acoes">
+            <button class="btn-sm gh" onclick="ignorarPendencia(${i})">Não é descarga</button>
+            <button class="btn-sm ok" id="btnP-${i}" onclick="resolverPendencia(${i})" disabled>Confirmar rateio</button>
+          </div>
+        </div>
+      </div>`;
+    }).join("");
+  }catch(e){
+    wrap.innerHTML = `<div class="state"><h4>Erro ao carregar</h4><p>Verifique a conexão com a API.</p></div>`;
+  }
+}
+
+function usarTudo(i, comp, saldo){
+  const inp = document.querySelector(`input[data-pend="${i}"][data-comp="${comp}"]`);
+  if(!inp) return;
+  inp.value = fmt1(saldo);
+  recalcRateio(i);
+}
+function recalcRateio(i){
+  const p = _pendCache[i]; if(!p) return;
+  let total = 0;
+  document.querySelectorAll(`input[data-pend="${i}"]`).forEach(inp=>{
+    const v = _dec(inp.value);
+    total += v;
+    const box = inp.closest(".rat");
+    if(box) box.classList.toggle("usado", v>0);
+  });
+  const falta = p.litros - total;
+  const el = $("#saldo-"+i);
+  const btn = $("#btnP-"+i);
+  if(!el || !btn) return;
+  el.className = "pend-saldo" + (Math.abs(falta)<0.5 ? " ok" : (total>0 ? " dif" : ""));
+  if(Math.abs(falta) < 0.5){
+    el.innerHTML = `Rateio fecha com o lançamento: <b>${fmt(total)}</b> L`;
+  } else if(falta > 0){
+    el.innerHTML = `Falta ratear <b>${fmt1(falta)}</b> L`;
+  } else {
+    el.innerHTML = `Rateado <b>${fmt1(-falta)}</b> L a mais que o lançamento`;
+  }
+  btn.disabled = total <= 0;
+}
+window.usarTudo = usarTudo; window.recalcRateio = recalcRateio;
+
+async function resolverPendencia(i){
+  const p = _pendCache[i]; if(!p) return;
+  const alocacoes = [];
+  document.querySelectorAll(`input[data-pend="${i}"]`).forEach(inp=>{
+    const v = _dec(inp.value);
+    if(v>0) alocacoes.push({compartimento: inp.dataset.comp, litros: v});
+  });
+  if(!alocacoes.length){ toast("Informe ao menos um compartimento","err"); return; }
+
+  const total = alocacoes.reduce((a,x)=>a+x.litros,0);
+  const dif = total - p.litros;
+  const seguir = ()=>enviarRateio(i, p, alocacoes);
+
+  if(Math.abs(dif) >= 0.5){
+    confirmRateio(
+      `O rateio soma ${fmt1(total)} L, mas o lançamento registrou ${fmt(p.litros)} L. ` +
+      `Diferença de ${fmt1(Math.abs(dif))} L ${dif>0?"a mais":"a menos"}. Confirmar assim mesmo?`,
+      seguir);
+    return;
+  }
+  seguir();
+}
+async function enviarRateio(i, p, alocacoes){
+  const btn = $("#btnP-"+i);
+  if(btn){ btn.disabled=true; btn.innerHTML='<span class="spin"></span>'; }
+  try{
+    const res = await API.post("pendencia_resolver", {
+      id: p.id, alocacoes: JSON.stringify(alocacoes),
+      responsavel: (STATE.user && (STATE.user.nome||STATE.user.login)) || ""
+    });
+    if(res.ok){
+      const neg = res.data && res.data.negativos && res.data.negativos.length;
+      toast(neg ? "Rateio salvo — compartimento com saldo negativo" : "Rateio salvo", neg?"err":"ok");
+      loadPendencias();
+      if($("#view-dashboard").classList.contains("active")) loadDashboard();
+    } else {
+      toast(res.erro||"Falha ao salvar","err");
+      if(btn){ btn.disabled=false; btn.textContent="Confirmar rateio"; }
+    }
+  }catch(e){
+    toast("Erro de conexão","err");
+    if(btn){ btn.disabled=false; btn.textContent="Confirmar rateio"; }
+  }
+}
+
+function ignorarPendencia(i){
+  const p = _pendCache[i]; if(!p) return;
+  confirmRateio(
+    `Marcar a entrada de ${fmt(p.litros)} L da placa ${p.placa} como "não é descarga"? ` +
+    `Nenhum saldo será alterado e ela sai da lista.`,
+    async ()=>{
+      const res = await API.post("pendencia_ignorar", {
+        id: p.id, responsavel: (STATE.user && (STATE.user.nome||STATE.user.login)) || ""
+      });
+      if(res.ok){ toast("Pendência ignorada"); loadPendencias(); }
+      else toast(res.erro||"Falha","err");
+    });
+}
+window.resolverPendencia = resolverPendencia; window.ignorarPendencia = ignorarPendencia;
+
+/* confirmação simples reaproveitando o modal */
+function confirmRateio(msg, onYes){
+  modal({
+    title:"Confirmar",
+    okText:"Confirmar",
+    body:`<p style="color:var(--txt-dim);font-size:14px;line-height:1.6;margin:0">${esc(msg)}</p>`,
+    onOk: async (close)=>{ close(); await onYes(); }
+  });
+}
+
+/* =================================================================
    SESSÕES / ACESSOS — visível apenas para PROPRIETARIO
    ================================================================= */
 function tempoRelativo(iso){
@@ -2029,22 +2421,34 @@ async function loadSessoes(iniciarAuto){
 
     const limite = Date.now() - CONFIG.ONLINE_MIN*60*1000;
     rows = rows.map(r=>{
-      const hb = r.ultimoPing || r.heartbeat || r.ultimoAcesso || r.ultimoLogin || null;
+      const hb = r.ultimoPing || r.heartbeat || r.ultimoAcesso || null;
       const t = hb ? new Date(hb).getTime() : 0;
       const online = (r.online !== undefined) ? !!r.online : (t > limite);
       return Object.assign({}, r, {online, _hb:hb});
     });
-    // online primeiro, depois por último acesso mais recente
     rows.sort((a,b)=>{
       if(a.online!==b.online) return a.online?-1:1;
-      return (new Date(b._hb||0)) - (new Date(a._hb||0));
+      return (new Date(b._hb||b.ultimoLogin||0)) - (new Date(a._hb||a.ultimoLogin||0));
     });
+    _sesCache = rows;
+
+    // aviso de logins duplicados — credenciais repetidas nunca autenticam
+    const dup = rows.filter(r=>r.login_duplicado);
+    const avi = $("#sesAviso");
+    if(dup.length){
+      avi.innerHTML = "<b>Atenção:</b> " + dup.map(d=>`o login <b>${esc(d.login)}</b>`).join(", ") +
+        " aparece mais de uma vez na aba CREDENCIAIS. O sistema autentica sempre a primeira linha, " +
+        "então as demais nunca conseguem entrar — e o histórico de acessos das duas se mistura numa só.";
+      avi.classList.remove("hidden");
+    } else { avi.classList.add("hidden"); }
 
     const onl = rows.filter(r=>r.online).length;
+    const totalAcessos = rows.reduce((a,r)=>a+Number(r.acessos||0),0);
     $("#sesKpis").innerHTML = [
       {l:"Conectados agora", v:String(onl), n:`sessão ativa nos últimos ${CONFIG.ONLINE_MIN} min`, c:"var(--green)"},
-      {l:"Usuários cadastrados", v:String(rows.length), n:"total de credenciais", c:"var(--txt)"},
-      {l:"Nunca acessaram", v:String(rows.filter(r=>!r.ultimoLogin && !r._hb).length), n:"credenciais sem primeiro login", c:"var(--txt-dim)"}
+      {l:"Usuários cadastrados", v:String(rows.length), n:"credenciais ativas e inativas", c:"var(--txt)"},
+      {l:"Total de acessos", v:fmt(totalAcessos), n:"somando todos os usuários", c:"var(--orange-soft)"},
+      {l:"Nunca acessaram", v:String(rows.filter(r=>!r.ultimoLogin).length), n:"credenciais sem primeiro login", c:"var(--txt-dim)"}
     ].map(i=>`<div class="kpi fade-in">
         <div class="kpi-label">${i.l}</div>
         <div class="kpi-value" style="color:${i.c}">${i.v}</div>
@@ -2060,19 +2464,23 @@ async function loadSessoes(iniciarAuto){
     }
 
     wrap.innerHTML = `<table class="data">
-      <thead><tr><th>Status</th><th>Login</th><th>Nome</th><th>Nível</th><th>Unidade</th><th>Último acesso</th><th>Quando</th><th>Dispositivo</th></tr></thead>
-      <tbody>${rows.map(r=>`
-        <tr>
+      <thead><tr><th>Status</th><th>Usuário</th><th>Nível</th><th>Último acesso</th><th>Quando</th><th>Acessos</th><th>Telefone</th></tr></thead>
+      <tbody>${rows.map((r,i)=>`
+        <tr class="linha-clicavel" onclick="abrirDossie(${i})">
           <td>${r.online
             ? '<span class="pill on"><span class="dot pulse"></span>Online</span>'
             : '<span class="pill off"><span class="dot"></span>Offline</span>'}</td>
-          <td class="mono" style="font-weight:700">${esc(r.login||"—")}</td>
-          <td>${esc(r.nome||"—")}</td>
+          <td>
+            <div style="font-weight:600">${esc(r.nome||r.login)}</div>
+            <div style="font-size:11px;color:var(--txt-faint);letter-spacing:.6px;margin-top:2px">
+              ${esc(r.login)}${r.unidade?" · "+esc(r.unidade):""}
+            </div>
+          </td>
           <td><span class="pill lvl">${esc(r.nivel||"—")}</span></td>
-          <td>${esc(r.unidade||"—")}</td>
-          <td class="mono">${dataHora(r.ultimoLogin || r._hb)}</td>
+          <td class="mono">${dataHora(r.ultimoLogin)}</td>
           <td style="color:var(--txt-dim)">${tempoRelativo(r._hb || r.ultimoLogin)}</td>
-          <td style="color:var(--txt-faint);font-size:12.5px">${esc(r.dispositivo||r.userAgent||"—")}</td>
+          <td class="mono" style="font-weight:600;color:var(--orange-soft)">${fmt(r.acessos||0)}</td>
+          <td class="mono" style="color:var(--txt-dim)">${esc(r.telefone||"—")}</td>
         </tr>`).join("")}</tbody></table>`;
   }catch(e){
     wrap.innerHTML = `<div class="state"><h4>Erro ao carregar</h4><p>Verifique a conexão com a API.</p></div>`;
@@ -2082,6 +2490,44 @@ async function loadSessoes(iniciarAuto){
     _sesTimer = setInterval(()=>{ if($("#view-sessoes").classList.contains("active")) loadSessoes(false); }, 30000);
   }
 }
+
+/* dossiê completo do usuário */
+function abrirDossie(i){
+  const r = _sesCache[i];
+  if(!r) return;
+  const ativo = ["ON","ATIVO"].indexOf(String(r.status||"").toUpperCase())>=0;
+  modal({
+    title: r.nome || r.login,
+    okText: "Fechar",
+    body:`
+      <p style="color:var(--txt-dim);font-size:13px;margin:0 0 16px;display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+        ${r.online
+          ? '<span class="pill on"><span class="dot pulse"></span>Conectado agora</span>'
+          : '<span class="pill off"><span class="dot"></span>Desconectado</span>'}
+        <span class="pill lvl">${esc(r.nivel||"—")}</span>
+        <span class="pill ${ativo?'on':'off'}">${ativo?'Credencial ativa':'Credencial inativa'}</span>
+      </p>
+      <div class="dossie">
+        <div><label>Login</label><b class="mono">${esc(r.login)}</b></div>
+        <div><label>Unidade</label><b>${esc(r.unidade||"—")}</b></div>
+        <div><label>Telefone</label><b class="mono">${esc(r.telefone||"—")}</b></div>
+        <div><label>Total de acessos</label><b style="color:var(--orange-soft)">${fmt(r.acessos||0)}</b></div>
+        <div><label>Último login</label><b style="font-size:13px">${dataHora(r.ultimoLogin)}</b></div>
+        <div><label>Último sinal</label><b style="font-size:13px">${tempoRelativo(r._hb || r.ultimoLogin)}</b></div>
+      </div>
+      ${r.versao?`<p style="font-size:12px;color:var(--txt-faint);margin-top:14px">Versão do app: ${esc(r.versao)}</p>`:""}
+      ${r.dispositivo?`<p style="font-size:12px;color:var(--txt-faint);margin-top:6px">Dispositivo: ${esc(r.dispositivo)}</p>`:""}
+      ${r.login_duplicado?`<p style="font-size:12.5px;color:var(--amber);margin-top:14px;line-height:1.5">
+        Este login está repetido na aba CREDENCIAIS. As linhas seguintes com o mesmo login nunca autenticam.</p>`:""}
+      <p style="font-size:12px;color:var(--txt-faint);margin-top:14px">Linha ${r.linha||"—"} da aba CREDENCIAIS</p>`,
+    onOk: (close)=>{ close(); }
+  });
+  const c = $("#modalCancel"); if(c) c.style.display="none";
+}
+window.abrirDossie = abrirDossie;
+
+$("#btnPendRefresh").addEventListener("click", loadPendencias);
+$("#pendStatus").addEventListener("change", loadPendencias);
 $("#btnSesRefresh").addEventListener("click", ()=>loadSessoes(false));
 $("#sesAuto").addEventListener("change", (e)=>{
   if(e.target.checked){
