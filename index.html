@@ -432,6 +432,26 @@ table.data tr:hover td{background:rgba(255,255,255,.02)}
 .view{display:none}
 .view.active{display:block;animation:fade .4s}
 
+/* ---------- tela de sessão encerrada (kick) ---------- */
+#kickScreen{
+  position:fixed;inset:0;z-index:200;display:none;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;padding:32px;
+  background:radial-gradient(1000px 500px at 50% -10%, rgba(255,106,26,.14), transparent 60%), var(--ink);
+}
+#kickScreen.show{display:flex;animation:fade .3s}
+#kickScreen .kick-mark{width:64px;height:64px;border-radius:18px;overflow:hidden;margin-bottom:24px}
+#kickScreen .kick-mark img{width:100%;height:100%;object-fit:contain}
+#kickScreen h1{font-family:var(--font-display);font-weight:800;font-size:26px;letter-spacing:-.5px;margin-bottom:12px}
+#kickScreen p{color:var(--txt-dim);font-size:15px;line-height:1.6;max-width:420px;margin-bottom:8px}
+#kickScreen .kick-sub{color:var(--txt-faint);font-size:13px;margin-top:18px;display:flex;align-items:center;gap:10px}
+.btn-kick{
+  background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 16px;
+  color:var(--txt-dim);font-size:13px;display:inline-flex;align-items:center;gap:8px;transition:.15s;
+}
+.btn-kick:hover{border-color:var(--red);color:var(--red)}
+.btn-kick svg{width:15px;height:15px}
+.icon-btn.kick:hover{border-color:var(--red);color:var(--red)}
+
 /* abas internas (Lançar) */
 .tabs{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
 .tab{
@@ -946,6 +966,10 @@ table.data tr:hover td{background:rgba(255,255,255,.02)}
           <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--txt-dim);cursor:pointer">
             <input type="checkbox" id="sesAuto" checked style="accent-color:var(--orange)"> atualizar a cada 30s
           </label>
+          <button class="btn-kick" id="btnKickAll">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 17l5-5-5-5M21 12H9M13 21H5a2 2 0 01-2-2V5a2 2 0 012-2h8"/></svg>
+            Desconectar todos
+          </button>
           <button class="btn-ghost" id="btnSesRefresh">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.5 9a9 9 0 0114.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0020.5 15"/></svg>
             Atualizar
@@ -957,6 +981,20 @@ table.data tr:hover td{background:rgba(255,255,255,.02)}
       <div class="table-wrap" id="sesTableWrap"></div>
     </section>
   </main>
+</div>
+
+<!-- ===== TELA DE SESSÃO ENCERRADA ===== -->
+<div id="kickScreen">
+  <div class="kick-mark"><img class="logo-img" alt="Trax-IA"></div>
+  <h1 id="kickTitle">Sessão encerrada</h1>
+  <p id="kickMsg">Sua sessão foi encerrada pelo administrador.</p>
+  <div class="kick-sub">
+    <span class="spin"></span>
+    <span>Redirecionando…</span>
+  </div>
+  <div style="margin-top:22px">
+    <button class="btn-kick" onclick="window.location.href='https://www.google.com.br'">Sair agora</button>
+  </div>
 </div>
 
 <div id="modalRoot"></div>
@@ -1118,17 +1156,53 @@ $("#btnLogout").addEventListener("click", async ()=>{
   $("#inSenha").value="";
 });
 
-/* ---------- heartbeat de presença ---------- */
+/* ---------- heartbeat de presença + porteiro de sessão ----------
+   A cada batida, o servidor responde se o usuário ainda pode ficar online.
+   Se o status virar OFF na aba CREDENCIAIS, ou o proprietário desconectar
+   o usuário pela tela Acessos, a resposta vem com valido:false e a sessão
+   é encerrada aqui (mensagem + redirecionamento). */
+let _kicked = false;
 function iniciarHeartbeat(){
   pararHeartbeat();
-  const bater = ()=>{
-    if(!STATE.user) return;
-    API.post("heartbeat",{login:STATE.user.login}).catch(()=>{});
+  const bater = async ()=>{
+    if(!STATE.user || _kicked) return;
+    try{
+      const res = await API.post("heartbeat",{login:STATE.user.login});
+      // só encerra quando a API responde explicitamente valido:false
+      if(res && res.ok && res.data && res.data.valido === false){
+        sessaoEncerrada(res.data.motivo || "");
+      }
+    }catch(e){ /* rede instável não derruba o usuário */ }
   };
   bater();
   _hbTimer = setInterval(bater, CONFIG.HEARTBEAT_MS);
 }
 function pararHeartbeat(){ if(_hbTimer){ clearInterval(_hbTimer); _hbTimer=null; } }
+
+/* Encerra a sessão do usuário atual: mostra o aviso e redireciona ao Google. */
+function sessaoEncerrada(motivo){
+  if(_kicked) return;
+  _kicked = true;
+  // para tudo o que fala com a API
+  pararHeartbeat();
+  if(_pendTimer){ clearInterval(_pendTimer); _pendTimer=null; }
+  if(_sesTimer){ clearInterval(_sesTimer); _sesTimer=null; }
+  STATE.user = null;
+
+  const titulo = $("#kickTitle"), msg = $("#kickMsg");
+  if(motivo === "bloqueado"){
+    if(titulo) titulo.textContent = "Acesso bloqueado";
+    if(msg) msg.textContent = "Seu acesso foi bloqueado pelo administrador. Feche esta aba do sistema.";
+  } else {
+    if(titulo) titulo.textContent = "Sessão encerrada";
+    if(msg) msg.textContent = "Sua sessão foi encerrada pelo administrador. Feche esta aba do sistema.";
+  }
+  const tela = $("#kickScreen");
+  if(tela) tela.classList.add("show");
+  // sai totalmente do sistema após alguns segundos
+  setTimeout(()=>{ window.location.href = "https://www.google.com.br"; }, 4500);
+}
+window.sessaoEncerrada = sessaoEncerrada;
 window.addEventListener("beforeunload", ()=>{
   if(STATE.user && navigator.sendBeacon && CONFIG.API_URL.indexOf("http")===0){
     const body = new URLSearchParams({action:"logout", login:STATE.user.login});
@@ -2461,9 +2535,20 @@ async function loadSessoes(iniciarAuto){
       return;
     }
 
+    const meuLogin = (STATE.user && String(STATE.user.login||"").toUpperCase()) || "";
     wrap.innerHTML = `<table class="data">
-      <thead><tr><th>Status</th><th>Usuário</th><th>Nível</th><th>Último acesso</th><th>Quando</th><th>Acessos</th><th>Telefone</th></tr></thead>
-      <tbody>${rows.map((r,i)=>`
+      <thead><tr><th>Status</th><th>Usuário</th><th>Nível</th><th>Último acesso</th><th>Quando</th><th>Acessos</th><th>Telefone</th><th style="text-align:right">Ações</th></tr></thead>
+      <tbody>${rows.map((r,i)=>{
+        const ehEu = String(r.login||"").toUpperCase() === meuLogin;
+        // só faz sentido desconectar quem está online e não é você mesmo
+        const podeKick = r.online && !ehEu;
+        const acao = podeKick
+          ? `<button class="icon-btn kick" title="Desconectar ${esc(r.nome||r.login)}"
+                onclick="event.stopPropagation();desconectarUsuario('${esc(r.login)}','${esc(r.nome||r.login)}')">
+               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 17l5-5-5-5M21 12H9M13 21H5a2 2 0 01-2-2V5a2 2 0 012-2h8"/></svg>
+             </button>`
+          : `<span style="color:var(--txt-faint);font-size:12px">${ehEu?"você":"—"}</span>`;
+        return `
         <tr class="linha-clicavel" onclick="abrirDossie(${i})">
           <td>${r.online
             ? '<span class="pill on"><span class="dot pulse"></span>Online</span>'
@@ -2479,7 +2564,8 @@ async function loadSessoes(iniciarAuto){
           <td style="color:var(--txt-dim)">${tempoRelativo(r._hb || r.ultimoLogin)}</td>
           <td class="mono" style="font-weight:600;color:var(--orange-soft)">${fmt(r.acessos||0)}</td>
           <td class="mono" style="color:var(--txt-dim)">${esc(r.telefone||"—")}</td>
-        </tr>`).join("")}</tbody></table>`;
+          <td><div class="tbl-actions" style="justify-content:flex-end">${acao}</div></td>
+        </tr>`;}).join("")}</tbody></table>`;
   }catch(e){
     wrap.innerHTML = `<div class="state"><h4>Erro ao carregar</h4><p>Verifique a conexão com a API.</p></div>`;
   }
@@ -2523,6 +2609,39 @@ function abrirDossie(i){
   const c = $("#modalCancel"); if(c) c.style.display="none";
 }
 window.abrirDossie = abrirDossie;
+
+/* ---------- desconexão remota de usuários ---------- */
+function desconectarUsuario(login, nome){
+  if(!login) return;
+  const rotulo = nome || login;
+  confirmRateio(
+    `Desconectar ${rotulo}? A sessão dele cai em até 60 segundos e ele precisará entrar de novo.`,
+    async ()=>{
+      const res = await API.post("forcar_logout", {login});
+      if(res.ok){ toast(`${rotulo} será desconectado em até 60s`); loadSessoes(false); }
+      else toast(res.erro || "Falha ao desconectar", "err");
+    });
+}
+window.desconectarUsuario = desconectarUsuario;
+
+function desconectarTodos(){
+  const meu = (STATE.user && STATE.user.login) || "";
+  confirmRateio(
+    "Desconectar TODOS os usuários (menos você)? Cada sessão cai em até 60 segundos. " +
+    "Use isto para forçar uma atualização do sistema.",
+    async ()=>{
+      const res = await API.post("forcar_logout_todos", {exceto: meu});
+      if(res.ok){
+        const n = (res.data && res.data.expulsos) || 0;
+        toast(`${n} usuário(s) serão desconectados em até 60s`);
+        loadSessoes(false);
+      } else toast(res.erro || "Falha ao desconectar", "err");
+    });
+}
+window.desconectarTodos = desconectarTodos;
+
+const _btnKickAll = $("#btnKickAll");
+if(_btnKickAll) _btnKickAll.addEventListener("click", desconectarTodos);
 
 $("#btnPendRefresh").addEventListener("click", loadPendencias);
 $("#pendStatus").addEventListener("change", loadPendencias);
