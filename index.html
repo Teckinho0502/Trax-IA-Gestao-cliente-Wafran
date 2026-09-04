@@ -647,6 +647,7 @@ table.data tr:hover td{background:rgba(255,255,255,.02)}
           <div class="page-sub">Extrato de entradas e saídas — filtre e exporte o relatório</div>
         </div>
         <div class="controls">
+          <button class="chip hidden" id="btnConfPorUsuario" onclick="toggleConfPorUsuario()" style="padding:9px 14px">Ver conferências por usuário</button>
           <button class="btn-ghost" id="btnExportar" style="width:auto;padding:11px 16px">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 15v4a2 2 0 002 2h12a2 2 0 002-2v-4"/></svg>
             Exportar
@@ -850,42 +851,79 @@ table.data tr:hover td{background:rgba(255,255,255,.02)}
       <div class="pane" id="pane-descarga">
         <div class="card" style="max-width:820px">
           <p style="color:var(--txt-dim);font-size:13.5px;margin:0 0 18px">
-            Transferência do caminhão para o tanque da base. O sistema debita do móvel e credita no fixo
-            na mesma operação. <b>Não há trava</b>: se o saldo do móvel ficar negativo, o lançamento passa
-            e um alerta é disparado.
+            Entrada de produto no tanque fixo da base. Escolha a origem: descarga dos
+            <b>compartimentos do caminhão-tanque</b> (diesel/etanol próprio) ou
+            <b>entrada manual</b> de tanque de terceiro (arla / etanol comprado fora).
           </p>
+
+          <!-- seletor de ORIGEM -->
+          <div class="tabs" style="margin-bottom:18px">
+            <button type="button" class="tab active" id="dcOrigemComp" onclick="dcSetOrigem('compartimentos')">Compartimento próprio</button>
+            <button type="button" class="tab" id="dcOrigemMan" onclick="dcSetOrigem('manual')">Entrada manual (terceiro)</button>
+          </div>
+
           <div class="form-grid">
             <div class="field">
               <label>Data e hora</label>
               <input id="dcData" type="datetime-local">
             </div>
             <div class="field">
-              <label>Placa de origem <span style="color:var(--red)">*</span></label>
-              <select id="dcPlaca"><option value="">carregando…</option></select>
-            </div>
-            <div class="field">
-              <label>Compartimento</label>
-              <select id="dcComp"><option value="">selecione a placa primeiro</option></select>
+              <label>Produto <span style="color:var(--red)">*</span></label>
+              <select id="dcProduto" onchange="dcProdutoMudou()">
+                <option value="DIESEL">Diesel</option>
+                <option value="ETANOL">Etanol</option>
+                <option value="ARLA">Arla</option>
+              </select>
             </div>
             <div class="field">
               <label>Tanque de destino <span style="color:var(--red)">*</span></label>
               <select id="dcDestino"><option value="">carregando…</option></select>
             </div>
             <div class="field">
-              <label>Volume descarregado (L) <span style="color:var(--red)">*</span></label>
-              <input id="dcLitros" type="text" inputmode="decimal" placeholder="ex.: 10.000" oninput="dcCalc()">
+              <label>Preço por litro (R$) <span style="color:var(--red)">*</span></label>
+              <input id="dcPreco" type="text" inputmode="decimal" placeholder="ex.: 6,12" oninput="dcCalc()">
             </div>
-            <div class="field">
-              <label>Saldo do compartimento após</label>
-              <input id="dcSaldoApos" type="text" readonly value="—">
+
+            <!-- MODO COMPARTIMENTOS: placa do móvel -->
+            <div class="field dc-comp-only">
+              <label>Placa de origem (tanque móvel) <span style="color:var(--red)">*</span></label>
+              <select id="dcPlaca" onchange="dcMontarCompartimentos()"><option value="">carregando…</option></select>
             </div>
+
+            <!-- MODO MANUAL: placa e motorista digitados -->
+            <div class="field dc-man-only" style="display:none">
+              <label>Placa (terceiro) <span style="color:var(--red)">*</span></label>
+              <input id="dcPlacaMan" type="text" placeholder="ex.: SPX0A67" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+            </div>
+            <div class="field dc-man-only" style="display:none">
+              <label>Motorista <span style="color:var(--red)">*</span></label>
+              <input id="dcMotoristaMan" type="text" placeholder="ex.: ARVEC / PLANTIVO" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+            </div>
+            <div class="field dc-man-only" style="display:none">
+              <label>Volume de entrada (L) <span style="color:var(--red)">*</span></label>
+              <input id="dcLitrosMan" type="text" inputmode="decimal" placeholder="ex.: 3000" oninput="dcCalc()">
+            </div>
+
             <div class="field full">
               <label>Responsável</label>
               <input id="dcResp" type="text" placeholder="ex.: GABRIEL" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
             </div>
           </div>
-          <div class="modal-foot" style="max-width:340px;margin-left:auto">
-            <button class="btn-primary" id="dcSalvar"><span id="dcSalvarTxt">Registrar descarga</span></button>
+
+          <!-- MODO COMPARTIMENTOS: lista dinâmica de compartimentos com litragem -->
+          <div class="dc-comp-only" id="dcCompsBox" style="margin-top:6px">
+            <div class="mpanel-title" style="padding:8px 0 12px">COMPARTIMENTOS · marque os que vão descarregar</div>
+            <div class="rateio" id="dcCompsLista">
+              <div style="color:var(--txt-faint);font-size:13px">Selecione a placa de origem para listar os compartimentos.</div>
+            </div>
+          </div>
+
+          <!-- resumo do total + aviso -->
+          <div class="pend-foot" style="margin-top:18px">
+            <div class="pend-saldo" id="dcResumo">Total a descarregar: <b>0</b> L</div>
+            <div class="pend-acoes">
+              <button class="btn-primary" id="dcSalvar" style="width:auto;padding:12px 22px"><span id="dcSalvarTxt">Registrar descarga</span></button>
+            </div>
           </div>
           <div id="dcMsg" style="text-align:right;font-size:13px;margin-top:10px;min-height:18px"></div>
         </div>
@@ -1140,6 +1178,7 @@ function enterApp(){
   $("#uName").textContent = STATE.user.nome || STATE.user.login;
   $("#uRole").textContent = (STATE.user.nivel||"—") + (STATE.user.unidade? " · "+STATE.user.unidade : "");
   $("#navSessoes").classList.toggle("hidden", !ehProprietario());
+  const _bcu = $("#btnConfPorUsuario"); if(_bcu) _bcu.classList.toggle("hidden", !ehProprietario());
   iniciarHeartbeat();
   iniciarVigiaPendencias();
   loadFiliais().then(loadDashboard);
@@ -1665,6 +1704,66 @@ let _movCache = [];
 let _movFiliaisSel = new Set();
 let _movFrotaSel = new Set();
 
+/* ---------- CONFERÊNCIAS (Plano A) ---------- */
+let _confMinhas = {};          // { chave: true }  -> marcações do usuário logado
+let _confTodas  = {};          // { chave: [usuarios] } -> visão do proprietário
+let _confVerPorUsuario = false; // toggle do proprietário
+
+async function carregarConferencias(){
+  _confMinhas = {}; _confTodas = {};
+  const login = (STATE.user && String(STATE.user.login||"").toUpperCase()) || "";
+  try{
+    // minhas marcações (sempre)
+    const rMin = await API.get("conferencias_listar", { usuario: login });
+    if(rMin.ok && rMin.data){
+      rMin.data.forEach(c=>{ if(c.conferido) _confMinhas[c.chave] = true; });
+    }
+    // se proprietário e toggle ligado: marcações de todos
+    if(ehProprietario() && _confVerPorUsuario){
+      const rAll = await API.get("conferencias_listar", { todos: "true" });
+      if(rAll.ok && rAll.data){
+        rAll.data.forEach(c=>{
+          if(!c.conferido) return;
+          if(!_confTodas[c.chave]) _confTodas[c.chave] = [];
+          _confTodas[c.chave].push(c.usuario);
+        });
+      }
+    }
+  }catch(e){ /* silencioso: a conferência é auxiliar, não trava o movimento */ }
+}
+
+async function marcarConferencia(el){
+  const chave = el.getAttribute("data-confchave");
+  const conferido = el.checked;
+  const login = (STATE.user && String(STATE.user.login||"").toUpperCase()) || "";
+  if(!chave){ return; }
+  // atualização otimista local
+  if(conferido) _confMinhas[chave] = true; else delete _confMinhas[chave];
+  try{
+    const res = await API.post("conferencia_marcar", { chave, usuario: login, conferido: conferido?"true":"false" });
+    if(!res.ok){
+      toast(res.erro||"Falha ao salvar conferência","err");
+      el.checked = !conferido;  // reverte
+      if(!conferido) _confMinhas[chave] = true; else delete _confMinhas[chave];
+    } else {
+      toast(conferido?"Marcado como conferido":"Desmarcado");
+    }
+  }catch(e){
+    toast("Erro de conexão","err");
+    el.checked = !conferido;
+    if(!conferido) _confMinhas[chave] = true; else delete _confMinhas[chave];
+  }
+}
+window.marcarConferencia = marcarConferencia;
+
+function toggleConfPorUsuario(){
+  _confVerPorUsuario = !_confVerPorUsuario;
+  const b = $("#btnConfPorUsuario");
+  if(b) b.classList.toggle("active", _confVerPorUsuario);
+  loadMovimento();
+}
+window.toggleConfPorUsuario = toggleConfPorUsuario;
+
 function popularChipsFiliais(){
   const box = $("#movFiliaisChips");
   if(!box) return;
@@ -1730,6 +1829,10 @@ async function loadMovimento(){
         <h4>Sem movimento</h4><p>Nenhum lançamento para os filtros selecionados.</p></div>`;
       return;
     }
+    // carrega as conferências antes de montar a tabela (Plano A)
+    await carregarConferencias();
+
+    const verPorUsuario = ehProprietario() && _confVerPorUsuario;
     const linhas = rows.slice().reverse().map(r=>{
       const d = r.data ? new Date(r.data) : null;
       const dataFmt = d && !isNaN(d) ? d.toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"}) : "—";
@@ -1738,7 +1841,25 @@ async function loadMovimento(){
       const litros = ehEntrada ? r.entrada : r.saida;
       const agg = r.agregado ? ` <span class="pill mov">agr</span>` : "";
       const orig = r.placaOrigem ? ` <span class="pill mov">de ${esc(r.placaOrigem)}</span>` : "";
+      const chave = r.conf_chave || "";
+      const meu = (STATE.user && String(STATE.user.login||"").toUpperCase()) || "";
+      const conferidoPorMim = !!(_confMinhas[chave]);
+      // célula de conferência
+      const cbConf = `<label style="display:inline-flex;align-items:center;justify-content:center;cursor:pointer;margin:0">
+          <input type="checkbox" style="accent-color:var(--orange);width:17px;height:17px" ${conferidoPorMim?"checked":""}
+                 data-confchave="${esc(chave)}" onchange="marcarConferencia(this)">
+        </label>`;
+      // coluna extra do proprietário: quem conferiu
+      let colDono = "";
+      if(verPorUsuario){
+        const usuarios = _confTodas[chave] || [];
+        colDono = `<td>${usuarios.length
+          ? usuarios.map(u=>`<span class="pill lvl">${esc(u)}</span>`).join(" ")
+          : '<span style="color:var(--txt-faint)">—</span>'}</td>`;
+      }
       return `<tr>
+        <td style="text-align:center">${cbConf}</td>
+        ${verPorUsuario?colDono:""}
         <td class="mono">${dataFmt}</td>
         <td>${esc(r.filial||"—")}</td>
         <td class="mono">${esc(r.placa||"—")}${agg}${orig}</td>
@@ -1752,8 +1873,9 @@ async function loadMovimento(){
         <td>${esc(r.responsavel||"—")}</td>
       </tr>`;
     }).join("");
+    const thDono = verPorUsuario ? "<th>Conferido por</th>" : "";
     wrap.innerHTML = `<table class="data">
-      <thead><tr><th>Data</th><th>Filial</th><th>Placa</th><th>Frota</th><th>Produto</th><th>Tipo</th><th>Litros</th><th>Preço/L</th><th>NF</th><th>Motorista</th><th>Responsável</th></tr></thead>
+      <thead><tr><th style="text-align:center">✓</th>${thDono}<th>Data</th><th>Filial</th><th>Placa</th><th>Frota</th><th>Produto</th><th>Tipo</th><th>Litros</th><th>Preço/L</th><th>NF</th><th>Motorista</th><th>Responsável</th></tr></thead>
       <tbody>${linhas}</tbody></table>`;
   }catch(e){
     wrap.innerHTML = `<div class="state"><h4>Erro ao carregar</h4><p>Verifique a conexão com a API.</p></div>`;
@@ -1891,6 +2013,7 @@ function loadLancar(){
   ["#lnData","#cgData","#dcData"].forEach(id=>{ if($(id) && !$(id).value) $(id).value = local; });
   lnCalc();
   popularSeletoresTanques();
+  if(typeof dcSetOrigem==="function") dcSetOrigem(_dcOrigem||"compartimentos");
 }
 function _dec(v){ return parseFloat(String(v||"").replace(/\./g,"").replace(",",".")) || 0; }
 
@@ -1907,15 +2030,131 @@ function cgCalc(){
   const total = _dec($("#cgLitros").value) * _dec($("#cgPreco").value);
   $("#cgTotal").value = money(total);
 }
-function dcCalc(){
-  const placa = $("#dcPlaca").value, comp = $("#dcComp").value;
-  const t = (STATE.moveis||[]).find(x=>String(x.id||x.nome)===placa);
-  const c = t && (t.compartimentos||[]).find(x=>x.nome===comp);
-  if(!c){ $("#dcSaldoApos").value="—"; return; }
-  const apos = c.saldo - _dec($("#dcLitros").value);
-  $("#dcSaldoApos").value = fmt(apos) + " L";
-  $("#dcSaldoApos").style.color = apos<0 ? "var(--red)" : "var(--txt)";
+/* ---------- DESCARGA v6: 2 modos (compartimentos / manual) ---------- */
+let _dcOrigem = "compartimentos";   // ou "manual"
+
+function dcSetOrigem(origem){
+  _dcOrigem = origem;
+  const ehComp = origem==="compartimentos";
+  const bC = $("#dcOrigemComp"), bM = $("#dcOrigemMan");
+  if(bC) bC.classList.toggle("active", ehComp);
+  if(bM) bM.classList.toggle("active", !ehComp);
+  $$(".dc-comp-only").forEach(el=>{ el.style.display = ehComp ? "" : "none"; });
+  $$(".dc-man-only").forEach(el=>{ el.style.display = ehComp ? "none" : ""; });
+  // No modo manual o produto não pode ser diesel (diesel é sempre próprio)
+  const selProd = $("#dcProduto");
+  if(selProd){
+    const optDiesel = selProd.querySelector('option[value="DIESEL"]');
+    if(optDiesel) optDiesel.disabled = !ehComp;
+    if(!ehComp && selProd.value==="DIESEL"){ selProd.value = "ETANOL"; }
+    // No modo compartimentos, arla não se aplica (arla é sempre terceiro)
+    const optArla = selProd.querySelector('option[value="ARLA"]');
+    if(optArla) optArla.disabled = ehComp;
+    if(ehComp && selProd.value==="ARLA"){ selProd.value = "DIESEL"; }
+  }
+  dcProdutoMudou();
 }
+function dcProdutoMudou(){
+  if(_dcOrigem==="compartimentos") dcMontarCompartimentos();
+  dcCalc();
+}
+
+/* monta a lista de compartimentos da placa selecionada, filtrando pelo produto */
+function dcMontarCompartimentos(){
+  const box = $("#dcCompsLista");
+  if(!box) return;
+  const placa = $("#dcPlaca") ? $("#dcPlaca").value : "";
+  const produto = $("#dcProduto") ? $("#dcProduto").value : "";
+  const t = (STATE.moveis||[]).find(x=>String(x.id||x.nome)===placa);
+  const comps = (t && t.compartimentos) ? t.compartimentos : [];
+  if(!placa){ box.innerHTML = '<div style="color:var(--txt-faint);font-size:13px">Selecione a placa de origem para listar os compartimentos.</div>'; dcCalc(); return; }
+  if(!comps.length){ box.innerHTML = '<div style="color:var(--txt-faint);font-size:13px">Este caminhão não tem compartimentos cadastrados.</div>'; dcCalc(); return; }
+
+  box.innerHTML = comps.map(c=>{
+    const vazio = c.saldo<=0;
+    // compartimento de produto diferente do escolhido fica bloqueado
+    const outroProduto = c.produto && produto && c.produto!==produto;
+    const inativo = vazio || outroProduto;
+    let nota;
+    if(outroProduto) nota = `contém ${esc(String(c.produto||"").toLowerCase())} — bloqueado`;
+    else if(vazio)   nota = "vazio";
+    else             nota = `${fmt(c.saldo)} L de ${esc(String(c.produto||"").toLowerCase())}`;
+    return `<div class="rat ${inativo?'vazio':''}" id="dcrat-${esc(c.nome)}">
+      <div class="rat-cab">
+        <label style="display:flex;align-items:center;gap:8px;cursor:${inativo?'not-allowed':'pointer'};margin:0">
+          <input type="checkbox" style="accent-color:var(--orange)" data-dccomp="${esc(c.nome)}"
+                 data-saldo="${c.saldo}" ${inativo?'disabled':''} onchange="dcToggleComp('${esc(c.nome)}')">
+          <b>${esc(c.nome)}</b>
+        </label>
+      </div>
+      <div class="rat-saldo">${nota} · cap. ${fmt(c.capacidade)} L</div>
+      <input type="text" inputmode="decimal" placeholder="0" disabled
+             data-dclitros="${esc(c.nome)}" data-saldo="${c.saldo}"
+             oninput="dcCalc()">
+    </div>`;
+  }).join("");
+  dcCalc();
+}
+
+/* marca/desmarca um compartimento: habilita o campo e sugere o saldo total */
+function dcToggleComp(nome){
+  const chk = document.querySelector(`input[data-dccomp="${nome}"]`);
+  const inp = document.querySelector(`input[data-dclitros="${nome}"]`);
+  const box = document.getElementById("dcrat-"+nome);
+  if(!chk || !inp) return;
+  if(chk.checked){
+    inp.disabled = false;
+    if(!inp.value || _dec(inp.value)===0){ inp.value = fmt1(Number(chk.dataset.saldo||0)); }
+    if(box) box.classList.add("usado");
+  } else {
+    inp.disabled = true; inp.value = "";
+    if(box) box.classList.remove("usado");
+  }
+  dcCalc();
+}
+
+/* recalcula total, valida excesso por compartimento e habilita/desabilita o botão */
+function dcCalc(){
+  const btn = $("#dcSalvar"), resumo = $("#dcResumo");
+  let total = 0, excesso = false, algum = false;
+
+  if(_dcOrigem==="compartimentos"){
+    document.querySelectorAll("input[data-dclitros]").forEach(inp=>{
+      if(inp.disabled) return;
+      const v = _dec(inp.value);
+      const saldo = Number(inp.dataset.saldo||0);
+      const box = inp.closest(".rat");
+      if(v>0) algum = true;
+      // excesso: volume maior que o saldo do compartimento
+      const excede = v > saldo + 0.001;
+      if(excede){ excesso = true; inp.style.color = "var(--red)"; if(box) box.style.borderColor="var(--red)"; }
+      else { inp.style.color = "var(--txt)"; if(box) box.style.borderColor=""; }
+      total += v;
+    });
+  } else {
+    total = _dec($("#dcLitrosMan") ? $("#dcLitrosMan").value : 0);
+    if(total>0) algum = true;
+  }
+
+  if(resumo){
+    if(excesso){
+      resumo.className = "pend-saldo dif";
+      resumo.innerHTML = `<b style="color:var(--red)">Volume maior que o saldo do compartimento</b>`;
+    } else {
+      resumo.className = "pend-saldo" + (total>0?" ok":"");
+      resumo.innerHTML = `Total a descarregar: <b>${fmt(total)}</b> L`;
+    }
+  }
+  if(btn){
+    const precoOk = _dec($("#dcPreco") ? $("#dcPreco").value : 0) > 0;
+    const destinoOk = $("#dcDestino") && $("#dcDestino").value;
+    btn.disabled = excesso || !algum || !precoOk || !destinoOk;
+  }
+}
+window.dcSetOrigem = dcSetOrigem;
+window.dcProdutoMudou = dcProdutoMudou;
+window.dcMontarCompartimentos = dcMontarCompartimentos;
+window.dcToggleComp = dcToggleComp;
 window.lnCalc = lnCalc; window.cgCalc = cgCalc; window.dcCalc = dcCalc;
 
 function popularSeletoresTanques(){
@@ -1953,8 +2192,8 @@ function popularCompartimentos(selPlaca, selComp, somenteComSaldo){
 }
 document.addEventListener("change",(e)=>{
   if(e.target && e.target.id==="cgPlaca") popularCompartimentos("#cgPlaca","#cgComp",false);
-  if(e.target && e.target.id==="dcPlaca"){ popularCompartimentos("#dcPlaca","#dcComp",true); dcCalc(); }
-  if(e.target && e.target.id==="dcComp") dcCalc();
+  // dcPlaca e dcProduto já chamam dcMontarCompartimentos/dcProdutoMudou via onchange inline
+  if(e.target && e.target.id==="dcDestino") dcCalc();
 });
 
 /* ---- salvar SAÍDA ---- */
@@ -2014,32 +2253,77 @@ document.addEventListener("click", async (e)=>{
   finally{ btn.disabled=false; $("#cgSalvarTxt").textContent="Registrar carregamento"; }
 });
 
-/* ---- salvar DESCARGA (móvel -> fixo) ---- */
+/* ---- geolocalização do dispositivo (lat-long) ---- */
+function dcObterLatLong(){
+  return new Promise((resolve)=>{
+    if(!navigator.geolocation){ resolve(""); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos=>resolve(pos.coords.latitude.toFixed(5)+", "+pos.coords.longitude.toFixed(5)),
+      ()=>resolve(""),   // se o usuário negar, segue sem lat-long
+      { enableHighAccuracy:true, timeout:6000, maximumAge:60000 }
+    );
+  });
+}
+
+/* ---- salvar DESCARGA (2 modos) ---- */
 document.addEventListener("click", async (e)=>{
   if(!e.target.closest || !e.target.closest("#dcSalvar")) return;
   const btn=$("#dcSalvar"), msg=$("#dcMsg");
-  const placa=$("#dcPlaca").value, destino=$("#dcDestino").value, litros=_dec($("#dcLitros").value);
+  const produto = $("#dcProduto").value;
+  const destino = $("#dcDestino").value;
+  const preco = _dec($("#dcPreco").value);
+  const dataISO = $("#dcData").value ? new Date($("#dcData").value).toISOString() : "";
+  const responsavel = $("#dcResp").value.trim();
   msg.textContent=""; msg.style.color="var(--txt-dim)";
-  if(!placa){ msg.style.color="var(--red)"; msg.textContent="Selecione a placa de origem"; return; }
+
   if(!destino){ msg.style.color="var(--red)"; msg.textContent="Selecione o tanque de destino"; return; }
-  if(litros<=0){ msg.style.color="var(--red)"; msg.textContent="Informe o volume descarregado"; return; }
+  if(preco<=0){ msg.style.color="var(--red)"; msg.textContent="Informe o preço por litro"; return; }
+
+  let payload;
+  if(_dcOrigem==="manual"){
+    const placaMan = $("#dcPlacaMan").value.trim().toUpperCase();
+    const motoristaMan = $("#dcMotoristaMan").value.trim().toUpperCase();
+    const litrosMan = _dec($("#dcLitrosMan").value);
+    if(!placaMan){ msg.style.color="var(--red)"; msg.textContent="Informe a placa (terceiro)"; return; }
+    if(litrosMan<=0){ msg.style.color="var(--red)"; msg.textContent="Informe o volume de entrada"; return; }
+    payload = { modo:"manual", produto, tanque_destino:destino, preco,
+                placa:placaMan, motorista:motoristaMan, litros:litrosMan,
+                responsavel, data:dataISO };
+  } else {
+    const placa = $("#dcPlaca").value;
+    if(!placa){ msg.style.color="var(--red)"; msg.textContent="Selecione a placa de origem"; return; }
+    const compartimentos = [];
+    document.querySelectorAll("input[data-dclitros]").forEach(inp=>{
+      if(inp.disabled) return;
+      const v = _dec(inp.value);
+      if(v>0) compartimentos.push({ compartimento: inp.dataset.dclitros, litros: v });
+    });
+    if(!compartimentos.length){ msg.style.color="var(--red)"; msg.textContent="Marque ao menos um compartimento com volume"; return; }
+    payload = { modo:"compartimentos", produto, tanque_destino:destino, preco,
+                placa, compartimentos: JSON.stringify(compartimentos),
+                responsavel, data:dataISO };
+  }
+
   btn.disabled=true; $("#dcSalvarTxt").innerHTML='<span class="spin"></span>';
   try{
-    const res = await API.post("tanque_movel_descarregar", {
-      placa, compartimento:$("#dcComp").value, tanque_destino:destino, litros,
-      responsavel:$("#dcResp").value.trim(),
-      data: $("#dcData").value ? new Date($("#dcData").value).toISOString() : ""
-    });
+    payload.latlong = await dcObterLatLong();   // pega a posição do dispositivo
+    const res = await API.post("tanque_movel_descarregar", payload);
     if(res.ok){
       const neg = (res.data && res.data.saldo_negativo);
+      const litrosTot = (res.data && res.data.litros) || 0;
       toast(neg ? "Descarga registrada — saldo negativo no móvel" : "Descarga registrada", neg?"err":"ok");
       msg.style.color = neg ? "var(--amber)" : "var(--green)";
-      msg.textContent = `${fmt(litros)} L transferidos de ${placa} para o tanque ${destino}` + (neg?" · saldo do compartimento ficou negativo, alerta enviado":"");
-      $("#dcLitros").value=""; dcCalc(); $("#dcData").value=_agora();
+      msg.textContent = `${fmt(litrosTot)} L de ${produto.toLowerCase()} lançados no tanque ${destino}` + (neg?" · saldo negativo, alerta enviado":"");
+      // limpa campos
+      $("#dcData").value=_agora();
+      if(_dcOrigem==="manual"){ $("#dcPlacaMan").value=""; $("#dcMotoristaMan").value=""; $("#dcLitrosMan").value=""; }
+      else { dcMontarCompartimentos(); }
+      $("#dcPreco").value="";
+      dcCalc();
       loadDashboard();
     } else { msg.style.color="var(--red)"; msg.textContent = res.erro || "Falha ao registrar"; }
   }catch(err){ msg.style.color="var(--red)"; msg.textContent="Erro de conexão"; }
-  finally{ btn.disabled=false; $("#dcSalvarTxt").textContent="Registrar descarga"; }
+  finally{ btn.disabled=false; $("#dcSalvarTxt").textContent="Registrar descarga"; dcCalc(); }
 });
 
 /* =================================================================
