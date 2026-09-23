@@ -1234,7 +1234,7 @@ function sessaoEncerrada(motivo){
     if(msg) msg.textContent = "Seu acesso foi bloqueado pelo administrador. Feche esta aba do sistema.";
   } else {
     if(titulo) titulo.textContent = "Sessão encerrada";
-    if(msg) msg.textContent = "Sua sessão foi encerrada pelo administrador. Feche esta aba do sistema.";
+    if(msg) msg.textContent = "Sua sessão foi encerrada pelo administrador pois estamos atualizando o sistema. Você será redirecionado para o google";
   }
   const tela = $("#kickScreen");
   if(tela) tela.classList.add("show");
@@ -2494,6 +2494,7 @@ function openCred(c){
             <option ${isEdit&&c.nivel=='ACOMPANHADOR'?'selected':''}>ACOMPANHADOR</option>
             <option ${isEdit&&c.nivel=='OPERADOR'?'selected':''}>OPERADOR</option>
             <option ${isEdit&&c.nivel=='PROPRIETARIO'?'selected':''}>PROPRIETARIO</option>
+            <option ${isEdit&&c.nivel=='FATURISTA'?'selected':''}>FATURISTA</option>
           </select>
         </div>
         <div class="field"><label>Telefone</label><input id="cTel" value="${isEdit?esc(c.telefone):""}" placeholder="(65) 9 8442-1671" oninput="mascaraTelefone(this)" maxlength="16"></div>
