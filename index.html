@@ -1802,10 +1802,14 @@ function agruparPorPlaca(rows){
     const g = mapa[placa] || (mapa[placa] = {
       placa, filial:r.filial||"", tipoFrota:r.tipoFrota||"",
       produtos:new Set(), motoristas:new Set(),
-      entrada:0, saida:0, lancamentos:0, agregado:!!r.agregado
+      entrada:0, saida:0, valorEntrada:0, valorSaida:0, lancamentos:0, agregado:!!r.agregado
     });
+    const preco = Number(r.preco||0);
     g.entrada += Number(r.entrada||0);
     g.saida   += Number(r.saida||0);
+    // cada abastecimento usa o PRÓPRIO preço por litro: litros × preço
+    g.valorEntrada += Number(r.entrada||0) * preco;
+    g.valorSaida   += Number(r.saida||0) * preco;
     g.lancamentos++;
     if(r.categoria) g.produtos.add(String(r.categoria).toUpperCase());
     const mot = String(r.motorista||"").trim().toUpperCase();
@@ -1820,9 +1824,11 @@ function agruparPorPlaca(rows){
 }
 
 function renderTabelaAgrupada(grupos){
-  const totE = grupos.reduce((a,g)=>a+g.entrada,0);
-  const totS = grupos.reduce((a,g)=>a+g.saida,0);
-  const totL = grupos.reduce((a,g)=>a+g.lancamentos,0);
+  const totE  = grupos.reduce((a,g)=>a+g.entrada,0);
+  const totS  = grupos.reduce((a,g)=>a+g.saida,0);
+  const totVE = grupos.reduce((a,g)=>a+g.valorEntrada,0);
+  const totVS = grupos.reduce((a,g)=>a+g.valorSaida,0);
+  const totL  = grupos.reduce((a,g)=>a+g.lancamentos,0);
   const linhas = grupos.map(g=>`<tr>
     <td class="mono" style="font-weight:700">${esc(g.placa)}${g.agregado?' <span class="pill mov">agr</span>':''}</td>
     <td>${esc(g.filial||"—")}</td>
@@ -1830,19 +1836,23 @@ function renderTabelaAgrupada(grupos){
     <td>${esc(g.produtos.join(", ")||"—")}</td>
     <td class="mono">${fmt(g.lancamentos)}</td>
     <td class="mono" style="color:var(--green)">${g.entrada>0?fmt(g.entrada)+" L":"—"}</td>
+    <td class="mono">${g.valorEntrada>0?money(g.valorEntrada):"—"}</td>
     <td class="mono" style="color:var(--red)">${g.saida>0?fmt(g.saida)+" L":"—"}</td>
+    <td class="mono" style="font-weight:700">${g.valorSaida>0?money(g.valorSaida):"—"}</td>
     <td style="white-space:normal;min-width:240px">${g.motoristas.length
       ? g.motoristas.map(m=>`<span class="pill lvl" style="margin:2px 4px 2px 0">${esc(m)}</span>`).join("")
       : '<span style="color:var(--txt-faint)">—</span>'}</td>
   </tr>`).join("");
   return `<table class="data">
-    <thead><tr><th>Placa</th><th>Filial</th><th>Frota</th><th>Produto</th><th>Lançamentos</th><th>Entradas</th><th>Saídas</th><th>Motoristas</th></tr></thead>
+    <thead><tr><th>Placa</th><th>Filial</th><th>Frota</th><th>Produto</th><th>Lançamentos</th><th>Entradas</th><th>Valor entradas</th><th>Saídas</th><th>Valor saídas</th><th>Motoristas</th></tr></thead>
     <tbody>${linhas}</tbody>
     <tfoot><tr>
       <td colspan="4">TOTAL · ${fmt(grupos.length)} placa(s)</td>
       <td class="mono">${fmt(totL)}</td>
       <td class="mono">${fmt(totE)} L</td>
+      <td class="mono">${money(totVE)}</td>
       <td class="mono">${fmt(totS)} L</td>
+      <td class="mono">${money(totVS)}</td>
       <td></td>
     </tr></tfoot></table>`;
 }
@@ -1946,6 +1956,7 @@ async function loadMovimento(){
         <td>${tp}</td>
         <td class="mono">${fmt(litros)} L</td>
         <td class="mono">${r.preco>0?money(r.preco):"—"}</td>
+        <td class="mono" style="font-weight:700">${r.preco>0?money(Number(litros||0)*Number(r.preco)):"—"}</td>
         <td class="mono">${esc(r.nf||"—")}</td>
         <td>${esc(r.motorista||"—")}</td>
         <td>${esc(r.responsavel||"—")}</td>
@@ -1953,7 +1964,7 @@ async function loadMovimento(){
     }).join("");
     const thDono = verPorUsuario ? "<th>Conferido por</th>" : "";
     wrap.innerHTML = `<table class="data">
-      <thead><tr><th style="text-align:center">✓</th>${thDono}<th>Data</th><th>Filial</th><th>Placa</th><th>Frota</th><th>Produto</th><th>Tipo</th><th>Litros</th><th>Preço/L</th><th>NF</th><th>Motorista</th><th>Responsável</th></tr></thead>
+      <thead><tr><th style="text-align:center">✓</th>${thDono}<th>Data</th><th>Filial</th><th>Placa</th><th>Frota</th><th>Produto</th><th>Tipo</th><th>Litros</th><th>Preço/L</th><th>Valor</th><th>NF</th><th>Motorista</th><th>Responsável</th></tr></thead>
       <tbody>${linhas}</tbody></table>`;
   }catch(e){
     wrap.innerHTML = `<div class="state"><h4>Erro ao carregar</h4><p>Verifique a conexão com a API.</p></div>`;
@@ -1969,6 +1980,10 @@ function renderMovResumo(rows, tipo, qtdPlacas){
   const itens = [];
   if(tipo!=="SAIDA")   itens.push({l:"Total de entradas", v:fmt(entradas)+" L", n:rows.filter(r=>Number(r.entrada||0)>0).length+" lançamento(s)", c:"var(--green)"});
   if(tipo!=="ENTRADA") itens.push({l:"Total de saídas",   v:fmt(saidas)+" L",   n:rows.filter(r=>Number(r.saida||0)>0).length+" lançamento(s)", c:"var(--red)"});
+  const valorE = rows.reduce((a,r)=>a+Number(r.entrada||0)*Number(r.preco||0),0);
+  const valorS = rows.reduce((a,r)=>a+Number(r.saida||0)*Number(r.preco||0),0);
+  if(tipo!=="SAIDA")   itens.push({l:"Valor das entradas", v:money(valorE), n:"Σ litros × preço de cada lançamento", c:"var(--green)"});
+  if(tipo!=="ENTRADA") itens.push({l:"Valor das saídas",   v:money(valorS), n:"Σ litros × preço de cada abastecimento", c:"var(--red)"});
   if(!tipo)            itens.push({l:"Balanço do período", v:fmt(entradas-saidas)+" L", n:"entradas − saídas", c:(entradas-saidas)>=0?"var(--green)":"var(--red)"});
   if(qtdPlacas!=null)  itens.push({l:"Placas agrupadas", v:String(qtdPlacas), n:"uma linha por placa", c:"var(--orange-soft)"});
   itens.push({l:"Registros", v:String(rows.length), n:qtdPlacas!=null ? "lançamentos somados" : "linhas no relatório", c:"var(--txt)"});
@@ -2001,13 +2016,14 @@ document.addEventListener("click",(e)=>{
 
 /* ---------- exportação ---------- */
 function _movColunas(){
-  if(_movAgrupado) return ["Placa","Filial","Frota","Produto","Lancamentos","Entradas (L)","Saidas (L)","Motoristas"];
-  return ["Data","Filial","Placa","Frota","Produto","Tipo","Litros","Preco/L","NF","Motorista","Responsavel","KM","Operacao"];
+  if(_movAgrupado) return ["Placa","Filial","Frota","Produto","Lancamentos","Entradas (L)","Valor entradas (R$)","Saidas (L)","Valor saidas (R$)","Motoristas"];
+  return ["Data","Filial","Placa","Frota","Produto","Tipo","Litros","Preco/L","Valor (R$)","NF","Motorista","Responsavel","KM","Operacao"];
 }
 function _movLinhaArr(r){
   if(_movAgrupado){
     return [r.placa, r.filial||"", r.tipoFrota||"", (r.produtos||[]).join(", "), r.lancamentos,
-            String(r.entrada||0).replace(".",","), String(r.saida||0).replace(".",","),
+            String(r.entrada||0).replace(".",","), String(r.valorEntrada||0).replace(".",","),
+            String(r.saida||0).replace(".",","), String(r.valorSaida||0).replace(".",","),
             (r.motoristas||[]).join(" / ")];
   }
   const d = r.data ? new Date(r.data) : null;
@@ -2016,6 +2032,7 @@ function _movLinhaArr(r){
   const litros = ehEntrada ? r.entrada : r.saida;
   return [dataFmt, r.filial||"", r.placa||"", r.tipoFrota||"", r.categoria||"", ehEntrada?"Entrada":"Saída",
           String(litros||0).replace(".",","), r.preco>0?String(r.preco).replace(".",","):"",
+          r.preco>0?String(Number(litros||0)*Number(r.preco)).replace(".",","):"",
           r.nf||"", r.motorista||"", r.responsavel||"", r.km||"", r.operacao||""];
 }
 function exportarCSV(){
